@@ -1,59 +1,51 @@
-const User = require('../../models/User');
-const bcrypt = require("bcrypt")
-const jwt = require("jsonwebtoken")
+const User = require("../../db/models/User");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
-const hashPassword = async (password) => {
-  const saltRounds = 10
-  const hashedPassword = await bcrypt.hash(password,saltRounds)
-  return hashedPassword
-}
+const passHash = async (password) => {
+  const rounds = 10;
+  const hashedPassword = await bcrypt.hash(password, rounds);
+  return hashedPassword;
+};
 
-const createToken = (user)  =>{
+const generateToken = (user) => {
   const payload = {
-    _id : user._id,
-    username : user.username
-  }
-  const token = jwt.sign(payload,process.env.JWT_SECRET, {expiresIn :"1h"});
-  return token
-}
+    _id: user._id,
+    username: user.username,
+  };
+  const token = jwt.sign(payload, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_TOKEN_EX,
+  });
+  return token;
+};
 
-
-
-
-exports.signup =  async (req,res,next) =>{
-  try {
-    const { password } = req.body
-    req.body.passwors = await hashPassword(password)
-    const newUser = await User.create(req.body)
-    const token = createToken(newUser)
-    return res.status(201).json(token)
-  } catch (error) {
-    return next(error)
-  }
-  
-}
 exports.signin = async (req, res) => {
   try {
+    const token = generateToken(req.user);
+    return res.status(200).json({ token });
   } catch (err) {
-    res.status(500).json('Server Error');
+    res.status(500).json("Server Error");
   }
 };
 
 exports.signup = async (req, res) => {
   try {
+    const { password } = req.body;
+    req.body.password = await passHash(password);
     const newUser = await User.create(req.body);
-    res.status(201).json(newUser);
+    const token = generateToken(newUser);
+    res.status(201).json({ token });
   } catch (err) {
-    res.status(500).json('Server Error');
+    res.status(500).json("Server Error");
   }
 };
 
 exports.getUsers = async (req, res) => {
   try {
-    const users = await User.find().populate('urls');
+    const users = await User.find().populate("urls");
     res.status(201).json(users);
   } catch (err) {
-    res.status(500).json('Server Error');
+    res.status(500).json("Server Error");
   }
 };
