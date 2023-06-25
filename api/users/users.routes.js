@@ -5,9 +5,10 @@ const router = express.Router();
 const { signup, signin, getUsers } = require('./users.controllers');
 
 router.post('/signup', signup);
-router.post("/signin/user", passport.authenticate("local-username", { session: false }),
+router.post("/signin", passport.authenticate("local", { session: false }),
 signin
 );
-router.get('/users', getUsers);
-
+router.get('/users',  passport.authenticate("jwt", { session: false }),
+signin
+);
 module.exports = router;

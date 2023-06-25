@@ -31,8 +31,8 @@ exports.jwtStrategy = new JWTStrategy({
   jwtFromRequest: fromAuthHeaderAsBearerToken(),
   secretOrKey: process.env.JWT_SECRET,
 }, 
-async(requestToken, done) =>{
-  if(Date.now() > requestToken.exp * 1000){
+async(jwtPayload, done) =>{
+  if(Date.now() > jwtPayload.exp * 1000){
     return done(null, false)
 
   }
