@@ -6,12 +6,14 @@ const userRoutes = require("./api/users/users.routes");
 const notFound = require("./middlewares/notFoundHandler");
 const errorHandler = require("./middlewares/errorHandler");
 const passport = require("passport");
-const { localUserStrategy } = require("./middlewares/passport");
+const { localUserStrategy, jwtStrategy } = require("./middlewares/passport");
 
 connectDb();
 app.use(express.json());
 app.use(passport.initialize());
 passport.use("local-username", localUserStrategy);
+passport.use(jwtStrategy)
+
 
 
 app.use("/urls", urlRoutes);

@@ -1,7 +1,11 @@
-const LocalStrategy = require("passport-local");
+const LocalStrategy = require("passport-local").Strategy;
 const User = require("../db/models/User")
 const bcrypt = require("bcrypt");
-
+const errorHandler = require("./errorHandler");
+const { Error } = require("mongoose");
+const JWTStrategy = require("passport-jwt").Strategy;
+const {fromAuthHeaderAsBearerToken} = require("passport-jwt").ExtractJwt
+require("dotenv").config()
 exports.localUserStrategy = new LocalStrategy(
   { usernameField: "username" },
   async (username, password, done) => {
@@ -19,4 +23,27 @@ exports.localUserStrategy = new LocalStrategy(
       return done(error);
     }
   }
+);
+
+
+
+exports.jwtStrategy = new JWTStrategy({
+  jwtFromRequest: fromAuthHeaderAsBearerToken(),
+  secretOrKey: process.env.JWT_SECRET,
+}, 
+async(requestToken, done) =>{
+  if(Date.now() > requestToken.exp * 1000){
+    return done(null, false)
+
+  }
+  try {
+    const user = await User.findById(tokenPayload._id)
+    return done(null,user)
+    
+  } catch (error) {
+    return done(error)
+  }
+  
+
+}
 );
